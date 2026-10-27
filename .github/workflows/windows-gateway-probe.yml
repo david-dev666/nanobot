@@ -31,22 +31,8 @@ jobs:
         env:
           UV_EXCLUDE_NEWER: "2026-10-27T00:11:40Z"
         run: uv run --no-sync python -m scripts.install_channel_dependencies --all-channels
-      - name: Verify the serial native process group
-        run: >-
-          uv run --no-sync python -m pytest
-          tests/tools/test_exec_platform.py tests/cli/test_wsl_browser.py
-          tests/gateway/test_windows_shutdown.py
-          --junitxml=.diagnostics/windows-startup/native-process.xml
-          --timing-report=.diagnostics/windows-startup/native-process.json
-          --durations=25 --durations-min=1.0
-      - name: Recheck the observed compatibility timeouts
-        run: >-
-          uv run --no-sync python -m pytest -n 6 --dist loadfile
-          tests/cron/test_cron_edit_deadlines.py::test_reschedule_during_execution_preserves_new_occurrence
-          tests/agent/test_runtime_maintenance.py::test_dequeue_and_inline_dispatch_have_no_false_idle_gap
-          --junitxml=.diagnostics/windows-startup/compatibility.xml
-          --timing-report=.diagnostics/windows-startup/compatibility.json
-          --durations=25 --durations-min=1.0
+      - name: Compare isolated and concurrent real gateway startup
+        run: uv run --no-sync python scripts/windows_gateway_probe.py
       - name: Save diagnostic results
         if: always()
         uses: actions/upload-artifact@v4
