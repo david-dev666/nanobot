@@ -12,7 +12,6 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     env:
-      UV_EXCLUDE_NEWER: "2026-10-27T00:11:40Z"
       PYTEST_ADDOPTS: "-o tmp_path_retention_policy=failed -p scripts.pytest_timing"
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +24,12 @@ jobs:
           enable-cache: true
           cache-dependency-glob: pyproject.toml
       - name: Install the CI dependency set
+        env:
+          UV_EXCLUDE_NEWER: "2026-10-27T00:11:40Z"
         run: uv sync --all-extras --dev
       - name: Install channel dependencies
+        env:
+          UV_EXCLUDE_NEWER: "2026-10-27T00:11:40Z"
         run: uv run --no-sync python -m scripts.install_channel_dependencies --all-channels
       - name: Verify the serial native process group
         run: >-
@@ -36,15 +39,11 @@ jobs:
           --junitxml=.diagnostics/windows-startup/native-process.xml
           --timing-report=.diagnostics/windows-startup/native-process.json
           --durations=25 --durations-min=1.0
-      - name: Reproduce the six-worker compatibility suite
+      - name: Recheck the observed compatibility timeouts
         run: >-
           uv run --no-sync python -m pytest -n 6 --dist loadfile
-          --ignore=tests/cli/test_commands.py --ignore=tests/cli/test_cli_input.py
-          --ignore=tests/cli/test_desktop_target.py --ignore=tests/cli/test_desktop_target_entrypoints.py
-          --ignore=tests/tools/test_exec_platform.py --ignore=tests/cli/test_wsl_browser.py
-          --ignore=tests/gateway/test_windows_shutdown.py
-          --ignore=tests/test_install_scripts.py --ignore=tests/test_update_jobs.py
-          --ignore=tests/test_update_profiles.py
+          tests/cron/test_cron_edit_deadlines.py::test_reschedule_during_execution_preserves_new_occurrence
+          tests/agent/test_runtime_maintenance.py::test_dequeue_and_inline_dispatch_have_no_false_idle_gap
           --junitxml=.diagnostics/windows-startup/compatibility.xml
           --timing-report=.diagnostics/windows-startup/compatibility.json
           --durations=25 --durations-min=1.0
