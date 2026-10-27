@@ -11,13 +11,16 @@ jobs:
   reproduce:
     runs-on: windows-latest
     timeout-minutes: 12
+    env:
+      UV_EXCLUDE_NEWER: "2026-10-27T00:11:40Z"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.14.9"
       - uses: astral-sh/setup-uv@v4
         with:
+          version: "0.13.5"
           enable-cache: true
           cache-dependency-glob: pyproject.toml
       - name: Install the CI dependency set
