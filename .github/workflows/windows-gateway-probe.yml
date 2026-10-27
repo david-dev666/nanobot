@@ -19,6 +19,7 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
+          cache-dependency-glob: pyproject.toml
       - name: Install the CI dependency set
         run: uv sync --all-extras --dev
       - name: Install channel dependencies
