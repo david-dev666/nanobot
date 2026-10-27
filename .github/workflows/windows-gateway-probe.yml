@@ -1,0 +1,39 @@
+name: Windows gateway startup probe
+
+on:
+  push:
+    branches: [diagnostics/windows-gateway-startup]
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Install the CI dependency set
+        run: uv sync --all-extras --dev
+      - name: Install channel dependencies
+        run: uv run --no-sync python -m scripts.install_channel_dependencies --all-channels
+      - name: Repeat the unchanged isolated test
+        run: uv run --no-sync python scripts/windows_gateway_probe.py
+      - name: Save diagnostic results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-gateway-startup
+          retention-days: 1
+          include-hidden-files: true
+          path: |
+            .diagnostics/windows-startup/results.json
+            .diagnostics/windows-startup/*.log
+            .diagnostics/windows-startup/*.xml
+            .diagnostics/windows-startup/**/gateway.log
